@@ -68,6 +68,7 @@ export function usePokemon() {
 
   return {
     pokemon: paginatedPokemon,
+    allPokemon,
     totalPokemon: filteredPokemon.length,
     searchTerm,
     setSearchTerm,

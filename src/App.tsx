@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 function App() {
   const {
     pokemon,
+    allPokemon,
     totalPokemon,
     searchTerm,
     setSearchTerm,
@@ -23,32 +24,33 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header 
-        searchTerm={searchTerm} 
-        onSearchChange={setSearchTerm} 
+      <Header
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        allPokemon={allPokemon}
       />
-      
-      <main className="container mx-auto sm:px-16 px-8 py-8">
+
+      <main className="container mx-auto px-8 py-8 sm:px-20">
         <div className="mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h2 className="text-xl font-semibold text-gray-800">
-              {isLoading 
-                ? 'Loading Pokemon...' 
-                : `Showing ${pokemon.length} of ${totalPokemon} Pokemon`
+              {isLoading
+                ? 'Loading Pokémon...'
+                : `Showing ${pokemon.length} of ${totalPokemon} Pokémon`
               }
             </h2>
-            
-            <TypeFilter 
-              selectedType={selectedType} 
-              onTypeChange={setSelectedType} 
+
+            <TypeFilter
+              selectedType={selectedType}
+              onTypeChange={setSelectedType}
             />
           </div>
         </div>
-        
-        <PokemonGrid 
-          pokemon={pokemon} 
-          isLoading={isLoading} 
-          error={error} 
+
+        <PokemonGrid
+          pokemon={pokemon}
+          isLoading={isLoading}
+          error={error}
         />
 
         {!isLoading && !error && totalPages > 1 && (
@@ -61,10 +63,9 @@ function App() {
           </div>
         )}
       </main>
-      
       <Footer />
     </div>
   );
 }
 
-export default App;
+export default App
