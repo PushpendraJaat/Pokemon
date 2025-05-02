@@ -1,45 +1,47 @@
 import React from 'react';
-import { PokemonDetails } from '../types/pokemon';
+import { Pokemon } from '../types/pokemon';
 import PokemonCard from './PokemonCard';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface PokemonGridProps {
-  pokemon: PokemonDetails[];
-  isLoading: boolean;
-  error: Error | null;
+  pokemonList: Pokemon[];
+  loading: boolean;
+  error: string | null;
 }
 
-const PokemonGrid: React.FC<PokemonGridProps> = ({ pokemon, isLoading, error }) => {
-  if (isLoading) {
+const PokemonGrid: React.FC<PokemonGridProps> = ({ pokemonList, loading, error }) => {
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mb-4"></div>
-        <p className="text-gray-600">Loading Pokemon...</p>
+      <div className="flex justify-center items-center py-12">
+        <LoadingSpinner size="large" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <strong className="font-bold">Error! </strong>
-        <span className="block sm:inline">{error.message}</span>
+      <div className="py-8 text-center">
+        <div className="bg-red-100 text-red-700 p-4 rounded-md inline-block">
+          <p>{error}</p>
+        </div>
       </div>
     );
   }
 
-  if (pokemon.length === 0) {
+  if (pokemonList.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-gray-600 text-lg">No Pokemon found matching your search criteria.</p>
-        <p className="text-gray-500 mt-2">Try adjusting your filters or search term.</p>
+      <div className="py-8 text-center">
+        <div className="bg-yellow-100 text-yellow-800 p-4 rounded-md inline-block">
+          <p>No Pokémon found. Try adjusting your filters.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {pokemon.map(p => (
-        <PokemonCard key={p.id} pokemon={p} />
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      {pokemonList.map(pokemon => (
+        <PokemonCard key={pokemon.id} pokemon={pokemon} />
       ))}
     </div>
   );

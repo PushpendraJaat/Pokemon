@@ -1,37 +1,64 @@
 import React from 'react';
-import { PokemonDetails } from '../types/pokemon';
-import TypeBadge from './TypeBadge';
+import { Link } from 'react-router-dom';
+import { Heart } from 'lucide-react';
+import { Pokemon } from '../types/pokemon';
+import TypeBadge from '../components/TypeBadge';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 interface PokemonCardProps {
-  pokemon: PokemonDetails;
+  pokemon: Pokemon;
 }
 
 const PokemonCard: React.FC<PokemonCardProps> = ({ pokemon }) => {
-  const imageUrl = pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default;
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const favorite = isFavorite(pokemon.id);
   
+  const handleFavoriteToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (favorite) {
+      removeFavorite(pokemon.id);
+    } else {
+      addFavorite(pokemon);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col">
-      <div className="bg-gray-100 p-4 flex justify-center">
-        <img 
-          src={imageUrl} 
-          alt={`${pokemon.name} sprite`} 
-          className="h-32 w-32 object-contain" 
-        />
-      </div>
-      
-      <div className="p-4 flex-1 flex flex-col">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-semibold capitalize">{pokemon.name}</h2>
-          <span className="text-sm font-medium text-gray-500">#{pokemon.id.toString().padStart(3, '0')}</span>
+    <Link to={`/pokemon/${pokemon.id}`} className="group">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-lg">
+        <div className="relative">
+          <img 
+            src={pokemon.imageUrl || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png'} 
+            alt={pokemon.name}
+            className="w-full h-48 object-contain bg-gray-100 p-4"
+            loading="lazy"
+          />
+          <button
+            onClick={handleFavoriteToggle}
+            className="absolute top-2 right-2 p-2 rounded-full bg-white bg-opacity-70 hover:bg-opacity-100 transition-colors"
+            aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <Heart
+              size={20}
+              className={favorite ? "fill-red-500 text-red-500" : "text-gray-400"}
+            />
+          </button>
         </div>
         
-        <div className="flex flex-wrap gap-2 mt-auto">
-          {pokemon.types.map(typeInfo => (
-            <TypeBadge key={typeInfo.type.name} type={typeInfo.type.name} />
-          ))}
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-semibold capitalize">{pokemon.name}</h3>
+            <span className="text-gray-500 font-medium">#{pokemon.id}</span>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {pokemon.types.map(type => (
+              <TypeBadge key={type} type={type} size="sm" />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
