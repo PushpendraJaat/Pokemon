@@ -32,7 +32,7 @@ const PokemonGrid: React.FC<PokemonGridProps> = ({ pokemonList, loading, error }
     return (
       <div className="py-8 text-center">
         <div className="bg-yellow-100 text-yellow-800 p-4 rounded-md inline-block">
-          <p>No Pokémon found. Try adjusting your filters.</p>
+          <p>No Pokemon found. Try adjusting your filters.</p>
         </div>
       </div>
     );

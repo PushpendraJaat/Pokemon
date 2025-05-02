@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
+import React, { useState, useEffect, useRef, useCallback, KeyboardEvent, ChangeEvent } from 'react';
 import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePokemon } from '../contexts/PokemonContext';
@@ -9,8 +9,8 @@ interface SearchBarProps {
   className?: string;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ 
-  onSelect, 
+const SearchBar: React.FC<SearchBarProps> = ({
+  onSelect,
   placeholder = "Search Pokemon...",
   className = ""
 }) => {
@@ -18,9 +18,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const searchRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<number>();
   const navigate = useNavigate();
   const { searchPokemon, searchResults, searchLoading } = usePokemon();
 
+  // Handle outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -32,24 +34,33 @@ const SearchBar: React.FC<SearchBarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Debounced search
   useEffect(() => {
-    const debounceTimer = setTimeout(() => {
+    window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(() => {
       searchPokemon(query);
     }, 300);
 
-    return () => clearTimeout(debounceTimer);
+    return () => window.clearTimeout(debounceRef.current);
   }, [query, searchPokemon]);
 
-  const handleSelect = (id: string) => {
-    if (onSelect) {
-      onSelect(id);
-    } else {
-      navigate(`/pokemon/${id}`);
-    }
+  const resetSearch = useCallback(() => {
     setQuery('');
     setShowSuggestions(false);
     setSelectedIndex(-1);
-  };
+  }, []);
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      if (onSelect) {
+        onSelect(id);
+      } else {
+        navigate(`/pokemon/${id}`);
+      }
+      resetSearch();
+    },
+    [navigate, onSelect, resetSearch]
+  );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!searchResults.length) return;
@@ -57,13 +68,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < searchResults.length - 1 ? prev + 1 : prev
-        );
+        setSelectedIndex(prev => (prev < searchResults.length - 1 ? prev + 1 : prev));
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+        setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1));
         break;
       case 'Enter':
         e.preventDefault();
@@ -78,9 +87,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
-  const handleClear = () => {
-    setQuery('');
-    setShowSuggestions(false);
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setShowSuggestions(true);
     setSelectedIndex(-1);
   };
 
@@ -90,11 +99,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <input
           type="text"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setShowSuggestions(true);
-            setSelectedIndex(-1);
-          }}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setShowSuggestions(true)}
           placeholder={placeholder}
@@ -102,12 +107,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
         />
         <Search 
           size={18} 
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
         />
         {query && (
           <button
-            onClick={handleClear}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            onClick={resetSearch}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
             <X size={18} />
           </button>
@@ -125,8 +130,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
                   <button
                     onClick={() => handleSelect(pokemon.id)}
                     onMouseEnter={() => setSelectedIndex(index)}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-3 ${
-                      selectedIndex === index ? 'bg-gray-100' : ''
+                    className={`w-full px-4 py-2 text-left flex items-center gap-3 ${
+                      selectedIndex === index ? 'bg-gray-100' : 'hover:bg-gray-50'
                     }`}
                   >
                     <img 
